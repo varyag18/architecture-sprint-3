@@ -1,0 +1,75 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+title Уровень компонентов для микросервиса "Управление устройствами"
+
+Container(device_management, "Управление устройствами", "Управление отоплением, освещением, воротами и другими устройствами.") {
+    Component(api, "API", "Обработка HTTP-запросов.")
+    Component(RabbitMQ_client, "RabbitMQ Client", "Чтение и запись событий в RabbitMQ.")
+    Component(command_handler, "Обработчик команд", "Обработка команд управления устройствами.")
+    Component(device_state_manager, "Менеджер состояния устройств", "Управление состоянием устройств.")
+}
+
+' Взаимодействие между компонентами
+Rel(api, RabbitMQ_client, "Отправка команд в RabbitMQ.")
+Rel(RabbitMQ_client, command_handler, "Передача команд из RabbitMQ.")
+Rel(command_handler, device_state_manager, "Обновление состояния устройств.")
+Rel(device_state_manager, RabbitMQ_client, "Отправка событий о состоянии устройств в RabbitMQ.")
+
+title Уровень компонентов для микросервиса "Интеграция с устройствами партнёров"
+
+Container(partner_integration, "Интеграция с устройствами партнёров", "Поддержка стандартных протоколов для подключения сторонних устройств.") {
+    Component(RabbitMQ_client, "RabbitMQ Client", "Чтение и запись событий в RabbitMQ.")
+    Component(protocol_adapter, "Адаптер протоколов", "Преобразование данных между протоколами партнёров и проприетарным форматом.")
+    Component(device_manager, "Менеджер устройств", "Управление подключёнными устройствами партнёров.")
+}
+
+' Взаимодействие между компонентами
+Rel(RabbitMQ_client, protocol_adapter, "Передача команд и событий из RabbitMQ.")
+Rel(protocol_adapter, device_manager, "Управление устройствами.")
+Rel(device_manager, RabbitMQ_client, "Отправка событий о состоянии устройств в RabbitMQ.")
+
+
+title Уровень компонентов для микросервиса "Телеметрия и мониторинг"
+
+Container(monitoring_telemetry, "Мониторинг и телеметрия", "Сбор данных с датчиков, хранение и предоставление телеметрии.") {
+    Component(RabbitMQ_client, "RabbitMQ Client", "Чтение и запись событий в RabbitMQ.")
+    Component(data_processor, "Обработчик данных", "Обработка и агрегация данных телеметрии.")
+    Component(telemetry_storage, "Хранилище телеметрии", "Хранение данных телеметрии в базе данных.")
+}
+
+' Взаимодействие между компонентами
+Rel(RabbitMQ_client, data_processor, "Передача данных телеметрии из RabbitMQ.")
+Rel(data_processor, telemetry_storage, "Сохранение данных.")
+Rel(data_processor, RabbitMQ_client, "Отправка агрегированных данных в RabbitMQ.")
+
+title Уровень компонентов для микросервиса "Портал самообслуживания"
+
+Container(self_service, "Самообслуживание и настройка", "Управление пользовательскими настройками и конфигурациями.") {
+    Component(api, "API", "Обработка HTTP-запросов от пользователей.")
+    Component(RabbitMQ_client, "RabbitMQ Client", "Чтение и запись событий в RabbitMQ.")
+    Component(config_manager, "Менеджер конфигураций", "Управление настройками пользователей.")
+}
+
+' Взаимодействие между компонентами
+Rel(api, RabbitMQ_client, "Отправка запросов на настройку в RabbitMQ.")
+Rel(RabbitMQ_client, config_manager, "Передача событий и запросов из RabbitMQ.")
+Rel(config_manager, RabbitMQ_client, "Отправка событий о настройках в RabbitMQ.")
+
+
+title Уровень компонентов для микросервиса "Пользовательский интерфейс"
+
+Container(user_interface, "Пользовательский интерфейс", "Веб-интерфейс для управления устройствами и просмотра телеметрии.") {
+    Component(api, "API", "Обработка HTTP-запросов от пользователей.")
+    Component(RabbitMQ_client, "RabbitMQ Client", "Чтение и запись событий в RabbitMQ.")
+    Component(gui_controller, "GUI Controller", "Управление отображением данных в интерфейсе.")
+}
+
+' Взаимодействие между компонентами
+Rel(api, RabbitMQ_client, "Отправка запросов на управление устройствами в RabbitMQ.")
+Rel(RabbitMQ_client, gui_controller, "Передача данных телеметрии и событий из RabbitMQ.")
+Rel(gui_controller, RabbitMQ_client, "Отправка запросов на управление устройствами в RabbitMQ.")
+
+
+
+@enduml

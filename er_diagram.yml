@@ -1,0 +1,30 @@
+@startuml
+title Уровень кода для компонента "Адаптер протоколов"
+
+class own_protocol_commands {
+    +uniqueOwnCommandID: void
+    +deviceType: String
+    +deviceCommand: String
+    
+}
+
+class partner_protocol_commands {
+    +uniquePartnerCommandID: void
+    +devicePartnerType: String
+    +devicePartnerCommand: String
+    
+}
+
+class mapping_protocol_commands {
+    +uniquePartnerCommandID: void
+    +uniqueOwnCommandID: void
+    
+}
+
+
+
+RabbitMQClient --> own_protocol_commands : requestCommand
+RabbitMQClient --> mapping_protocol_commands : requestMapping
+RabbitMQClient --> DeviceManager : mappingResults
+
+@enduml

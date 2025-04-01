@@ -1,0 +1,34 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+title Уровень контейнеров с используемыми технологиями в "Теплом доме"
+
+Person(пользователь, "User", "Управляет устройствами и просматривает телеметрию через веб-интерфейс.")
+
+System_Boundary(экосистема, "Экосистема умного дома") {
+    Container(rabbit, "Шина данных (RabbitMQ)", "Передача сообщений между микросервисами через шину данных.", "RabitMQ")
+	Container(api_gateway, "API Gateway", "Маршрутизация запросов, аутентификация и авторизация.", "Kong, OpenID")
+    Container(partner_integration, "Интеграция с устройствами партнёров", "Поддержка стандартных протоколов для подключения сторонних устройств.", "Kong, MQTT, Rabbit Client")
+    Container(self_service, "Портал самообслуживания", "Управление пользовательскими настройками и конфигурациями.", "Kong, Rabbit Client, PostgreSQL")
+	Container(device_management, "Управление устройствами", "Управление отоплением, освещением, воротами и другими устройствами.", "Kong,Rabbit Client, PostgreSQL")
+    Container(monitoring_telemetry, "Телеметрия и мониторинг", "Сбор данных с датчиков, хранение и предоставление телеметрии.", "Kong, Rabbit Client, InfluxDB")
+	Container(user_interface, "Пользовательский интерфейс", "Веб-интерфейс для управления устройствами и просмотра телеметрии.", "React, Node.js, Apache2")
+
+    
+}
+
+' Взаимодействие между контейнерами
+Rel(пользователь, api_gateway, "Управляет устройствами и просматривает телеметрию.")
+Rel(api_gateway, rabbit, "Отправка команд и запросов в rabbit.")
+Rel(rabbit, device_management, "Получение команд для управления устройствами.")
+Rel(device_management, rabbit, "Отправка событий о состоянии устройств.")
+Rel(monitoring_telemetry, rabbit, "Отправка данных телеметрии.")
+Rel(partner_integration, rabbit, "Отправка событий о подключении устройств.")
+Rel(rabbit, monitoring_telemetry, "Получение данных для мониторинга.")
+Rel(rabbit, user_interface, "Получение данных для отображения в интерфейсе.")
+Rel(rabbit, self_service, "Получение запросов на настройку.")
+Rel(rabbit, partner_integration, "Получение событий для интеграции с устройствами партнёров.")
+Rel(self_service, rabbit, "Отправка информации о настройках пользователей.")
+Rel(user_interface, rabbit, "Отправка запросов на получение данных.")
+
+@enduml
